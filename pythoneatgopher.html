@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Python Eat Gopher Game</title>
+</head>
+<body>
+<script type="text/javascript">
+    //init
+    const box = 32,
+        MaxWidth = 19 * box,
+        MaxHeight = 19 * box;
+
+    let body = document.getElementsByTagName('body')[0];
+    body.style.padding = '0';
+    body.style.margin = '0';
+    let canvas = document.createElement('canvas');
+    canvas.height = MaxHeight;
+    canvas.width = MaxWidth;
+    document.body.appendChild(canvas);
+    let ctx = canvas.getContext('2d');
+    let ground = new Image(MaxWidth,MaxHeight);
+    ground.src = './images/ground.png';
+    let gopherImg  = new Image(box,box);
+    gopherImg.src = './images/gopher01.png';
+    let pythonImg = new Image(box,box);
+    pythonImg.src = './images/python.png';
+    //Users/tony/Documents/Doc/Misc
+    let python =[];
+    python[0] ={
+        x :  9 * box,
+        y : 10 * box
+    };
+    let gopher ={
+        x : Math.floor(Math.random() * 17 + 1) * box,
+        y : Math.floor(Math.random() * 15 + 3) * box
+    };
+    const dead = new Audio();
+    const eat = new Audio();
+    dead.src = '';
+    eat.src = '';
+
+    let score = 0;
+    let direction;
+    //change direction
+    document.addEventListener('keydown',function (event){
+        if(event.code === 'ArrowUp' && direction !== 'Down'){
+            direction = 'Up';
+        }else if(event.code === 'ArrowDown' && direction !== 'Up'){
+            direction = 'Down';
+        }else if(event.code === 'ArrowLeft' && direction !== 'Right'){
+            direction = 'Left';
+        }else if(event.code === 'ArrowRight' && direction !=='Left'){
+            direction = 'Right';
+        }
+    });
+
+    function draw(){
+        ctx.drawImage(ground,0,0);
+        for(let i = 0; i < python.length; i++){
+            ctx.fillStyle = (i === 0)? 'green' : 'white';
+            ctx.fillRect(python[i].x,python[i].y,box,box);
+            ctx.strokeStyle = 'red';
+            ctx.strokeRect(python[i].x,python[i].y,box,box);
+        }
+        ctx.drawImage(gopherImg,gopher.x,gopher.y,box,box);
+
+        //old python
+        let pythonX = python[0].x;
+        let pythonY = python[0].y;
+        ctx.drawImage(pythonImg,pythonX,pythonY,box,box);
+        //change direction
+        if(direction === 'Up') pythonY -= box;
+        if(direction === 'Down') pythonY += box;
+        if(direction === 'Left') pythonX -= box;
+        if(direction === 'Right') pythonX += box;
+
+        //if python eat gopher
+        if(pythonX === gopher.x && pythonY === gopher.y ){
+            score ++;
+            //set new gopher
+            gopher = {
+                x : Math.floor(Math.random() * 17 + 1) * box,
+                y : Math.floor(Math.random() * 15 + 3) * box
+            };
+        }else{
+            python.pop(); //remove th tail
+        }
+
+        //add new head
+        let newHead ={
+            x:pythonX,
+            y:pythonY
+        };
+
+        //game over rules
+        if(pythonX < box || pythonX > 17 * box || pythonY < 2 * box || pythonY > 17 * box || collision(newHead,python)){
+            clearInterval(game);
+        }
+
+        //check collision
+        function collision(head,arr){
+            for(let i = 0; i < arr.length; i++){
+                if(head.x === arr[i].x && head.y === arr[i].y){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        python.unshift(newHead);
+        //
+        ctx.fillStyle = 'white';
+        ctx.font = "38px Changa one";
+        ctx.fillText(score, 2.2 * box, 1.5 * box);
+}
+
+let game = setInterval(draw,200);
+
+</script>
+</body>
+</html>
